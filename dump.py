@@ -1,3 +1,4 @@
+from io import open
 from lxml import etree
 from collections import OrderedDict
 import psycopg2
@@ -18,9 +19,9 @@ parser.add_argument('-q', '--quiet', help='Be quiet.', action='store_true')
 
 args = parser.parse_args()
 
-outfile = file(args.output_file, 'w')
-outfile.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-outfile.write('<osm-notes>\n')
+outfile = open(args.output_file, 'w', encoding='utf-8')
+outfile.write(u'<?xml version="1.0" encoding="UTF-8"?>\n')
+outfile.write(u'<osm-notes>\n')
 
 conn = psycopg2.connect(host=args.host, port=args.port, user=args.user, password=args.password, database=args.database)
 note_cursor = conn.cursor()
@@ -57,15 +58,15 @@ for note in note_cursor:
 
         comment_elem.text = comment[3]
 
-    outfile.write(etree.tostring(note_elem, encoding='utf8', pretty_print=True))
+    outfile.write(etree.tostring(note_elem, encoding='unicode', pretty_print=True))
 
     if not args.quiet and note_cursor.rownumber % 100 == 0:
-        print "Wrote out note %6d. (%6d of %6d)" % (note[0], note_cursor.rownumber, note_cursor.rowcount)
+        print("Wrote out note %6d. (%6d of %6d)" % (note[0], note_cursor.rownumber, note_cursor.rowcount))
 
 if not args.quiet:
-  print "Wrote out note %6d. (%6d of %6d)" % (note[0], note_cursor.rownumber, note_cursor.rowcount)
+  print("Wrote out note %6d. (%6d of %6d)" % (note[0], note_cursor.rownumber, note_cursor.rowcount))
 
 conn.close()
 
-outfile.write('</osm-notes>\n')
+outfile.write(u'</osm-notes>\n')
 outfile.close()
